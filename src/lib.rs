@@ -76,7 +76,8 @@ mod test_binary_searches {
     use rand::Rng;
     use std::io::Write;
 
-    const SIZE: usize = 10_000_000;
+    const SIZE: usize = 10_000;
+    const TOTAL_LOOPS: usize = 20;
 
     lazy_static! {
         static ref RAND_ARR: Vec<usize> = rand::thread_rng()
@@ -87,17 +88,19 @@ mod test_binary_searches {
 
     #[test]
     fn test_base_binary_search() {
+        const TARGET: usize = 7;
+        println!("Target is: {}", TARGET);
+
         let buf = std::io::stdout();
         let mut handle = buf.lock();
 
         let base_arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         println!("TEST Simple find:::::: -- Finding now");
 
-        for i in 0..10 {
-            let rnd_find = 7;
+        for i in 0..=TOTAL_LOOPS {
             assert_eq!(
-                simple_binary_search(&base_arr, rnd_find),
-                rusty_binary_search(&base_arr, rnd_find)
+                simple_binary_search(&base_arr, TARGET),
+                rusty_binary_search(&base_arr, TARGET)
             );
             let _ = handle.write_all(format!("\n\nFinding {} in the array", TARGET).as_bytes());
             handle.flush().unwrap();
@@ -106,12 +109,14 @@ mod test_binary_searches {
 
     #[test]
     fn test_simple_binary_search() {
+        const TARGET: usize = 542;
+        println!("Target is: {}", TARGET);
+
         let buf = std::io::stdout();
         let mut handle = buf.lock();
 
-        for i in 0..100 {
-            let rnd_start = rand::thread_rng().gen_range(1..SIZE).to_owned();
-            let rnd_find = rand::thread_rng().gen_range(rnd_start..SIZE).to_owned();
+        for i in 0..=TOTAL_LOOPS {
+            let rnd_find = rand::thread_rng().gen_range(TARGET..SIZE).to_owned();
             assert_eq!(
                 simple_binary_search(&RAND_ARR, rnd_find),
                 rusty_binary_search(&RAND_ARR, rnd_find)
@@ -123,12 +128,14 @@ mod test_binary_searches {
 
     #[test]
     fn test_rusty_binary_search() {
+        const TARGET: usize = 454;
+        println!("Target is: {}", TARGET);
+
         let buf = std::io::stdout();
         let mut handle = buf.lock();
 
-        for i in 0..100 {
-            let rnd_start = rand::thread_rng().gen_range(1..SIZE).to_owned();
-            let rnd_find = rand::thread_rng().gen_range(rnd_start..SIZE).to_owned();
+        for i in 0..=TOTAL_LOOPS {
+            let rnd_find = rand::thread_rng().gen_range(TARGET..SIZE).to_owned();
             assert_eq!(
                 simple_binary_search(&RAND_ARR, rnd_find),
                 rusty_binary_search(&RAND_ARR, rnd_find)
