@@ -1,5 +1,7 @@
 #![allow(dead_code, unused_variables, clippy::comparison_chain)]
 
+use std::io::Write;
+
 fn simple_binary_search(arr: &[usize], find: usize) -> Option<usize> {
     println!("\n\n-----------------Simple Binary Search-----------------");
     println!("-----------------====================-----------------\n\n");
@@ -10,22 +12,29 @@ fn simple_binary_search(arr: &[usize], find: usize) -> Option<usize> {
     let mut lind = 0;
     let mut current = arr[half];
 
+    let buf = std::io::stdout();
+    let mut handle = buf.lock();
+
     while lind <= hind {
         if current == find {
-            println!("Found {} at index {}", find, half);
+            let _ = handle.write_all(format!("Found {} at index {} \n", find, half).as_bytes());
             return Some(half);
         } else if current < find {
-            println!("{} is less than {}", current, find);
+            let _ = handle.write_all(format!("{} is less than {}\n", current, find).as_bytes());
             lind = half + 1;
         } else if current > find {
-            println!("{} is greater than {}", current, find);
+            let _ = handle.write_all(format!("{} is greater than {}", current, find).as_bytes());
             hind = hind.saturating_sub(1);
         }
-        println!("lind: {}, hind: {}", lind, hind);
+
+        let _ = handle.write_all(format!("lind: {}, hind: {}\n", lind, hind).as_bytes());
+
         half = (hind + lind).div_euclid(2);
         current = arr[half];
-        println!("half: {}, current: {}", half, current);
+        let _ = handle.write_all(format!("half: {}\n", half).as_bytes());
+        handle.flush().unwrap();
     }
+    let _ = handle.write_all(format!("Found {} at index {}\n", find, half).as_bytes());
     None
 }
 
@@ -39,18 +48,23 @@ fn rusty_binary_search(arr: &[usize], find: usize) -> Option<usize> {
     let mut lind = 0;
     let mut current = arr[half];
 
+    let buf = std::io::stdout();
+    let mut handle = buf.lock();
+
     while lind <= hind {
         match current.cmp(&find) {
             std::cmp::Ordering::Equal => return Some(half),
             std::cmp::Ordering::Less => lind = half.saturating_add(1),
             std::cmp::Ordering::Greater => hind = half.saturating_sub(1),
         }
-        println!("lind: {}, hind: {}", lind, hind);
+        let _ = handle.write_all(format!("lind: {}, hind: {}\n", lind, hind).as_bytes());
         half = (hind + lind).div_euclid(2);
-        println!("half: {}", half);
-        println!("current: {}", arr[half]);
+        let _ = handle.write_all(format!("half: {}\n", half).as_bytes());
+        let _ = handle.write_all(format!("current: {}\n", arr[half]).as_bytes());
         current = arr[half];
+        handle.flush().unwrap();
     }
+    let _ = handle.write_all(format!("Found {} at index {}\n", find, half).as_bytes());
 
     None
 }
@@ -85,7 +99,7 @@ mod test_binary_searches {
                 simple_binary_search(&base_arr, rnd_find),
                 rusty_binary_search(&base_arr, rnd_find)
             );
-            let _ = handle.write_all(format!("Finding {} in the array\n", rnd_find).as_bytes());
+            let _ = handle.write_all(format!("\n\nFinding {} in the array", TARGET).as_bytes());
             handle.flush().unwrap();
         }
     }
@@ -102,7 +116,7 @@ mod test_binary_searches {
                 simple_binary_search(&RAND_ARR, rnd_find),
                 rusty_binary_search(&RAND_ARR, rnd_find)
             );
-            let _ = handle.write_all(format!("Finding {} in the array\n", rnd_find).as_bytes());
+            let _ = handle.write_all(format!("\n\nFinding {} in the array", rnd_find).as_bytes());
             handle.flush().unwrap();
         }
     }
@@ -119,7 +133,7 @@ mod test_binary_searches {
                 simple_binary_search(&RAND_ARR, rnd_find),
                 rusty_binary_search(&RAND_ARR, rnd_find)
             );
-            let _ = handle.write_all(format!("Finding {} in the array\n", rnd_find).as_bytes());
+            let _ = handle.write_all(format!("\n\nFinding {} in the array", rnd_find).as_bytes());
             handle.flush().unwrap();
         }
     }
