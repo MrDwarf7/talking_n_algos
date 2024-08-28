@@ -69,6 +69,60 @@ fn rusty_binary_search(arr: &[usize], find: usize) -> Option<usize> {
     None
 }
 
+const BLOCK_SIZE: usize = 1024;
+// Binary search over an array of 128 els.
+//
+// Returns the first i such that
+// block[i] >= target.
+//
+// # Assumes
+//
+// That block is sorted, and that the last `doc` in
+// block is `>= target`.
+// If none of the elements is greater than the last doc,
+// this function returns 127, which does not make much sense.
+#[inline(never)]
+fn mildly_unsafe_binary_search(block: &[u32; BLOCK_SIZE], target: u32) -> usize {
+    // Full block of 128 els.
+    //
+    // We do a branchless, unrolled binary search.
+    let mut start = 0;
+    let mut half: usize = BLOCK_SIZE / 2;
+    for _ in 0..7 {
+        println!("start: {}", start);
+        let middle = start + half;
+        unsafe {
+            let pivot: u32 = *block.get_unchecked(middle);
+            start = if target >= pivot { middle } else { start }
+        }
+        half /= 2;
+    }
+    start
+}
+
+#[cfg(test)]
+mod test_unsafe_binary {
+    use super::*;
+    use std::io::Write;
+    #[test]
+    fn test_unsafe_binary_search() {
+        const TARGET: u32 = 457;
+        let block = [0u32; BLOCK_SIZE];
+
+        let buf = std::io::stdout();
+        let mut handle = buf.lock();
+        let _ = handle.write_all(
+            format!(
+                "Found {} at index {}\n",
+                TARGET,
+                mildly_unsafe_binary_search(&block, TARGET)
+            )
+            .as_bytes(),
+        );
+        handle.flush().unwrap();
+    }
+}
+
 #[cfg(test)]
 mod test_binary_searches {
     use super::*;
